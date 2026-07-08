@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Class-Path: /home/acqexp/DAS/LIB_JAVA/xerces-1_2_3/xerces.jar  /home/a
+ cqexp/DAS/LIB_JAVA/axis-1_3/lib/jaxrpc.jar  /home/acqexp/DAS/LIB_JAVA
+ /axis-1_3/lib/wsdl4j-1.5.1.jar  /home/acqexp/DAS/LIB_JAVA/axis-1_3/li
+ b/axis.jar  /home/acqexp/DAS/LIB_JAVA/axis-1_3/lib/commons-logging-1.
+ 0.4.jar  /home/acqexp/DAS/LIB_JAVA/axis-1_3/lib/commons-discovery-0.2
+ .jar  /home/acqexp/DAS/LIB_JAVA/axis-1_3/lib/saaj.jar /home/acqexp/DA
+ S/LIB_JAVA/jfreechart-1.0.13/lib/jfreechart-1.0.13.jar /home/acqexp/D
+ AS/LIB_JAVA/jfreechart-1.0.13/lib/jfreechart-1.0.13-experimental.jar 
+ /home/acqexp/DAS/LIB_JAVA/jfreechart-1.0.13/lib/jfreechart-1.0.13-swt
+ .jar /home/acqexp/DAS/LIB_JAVA/jfreechart-1.0.13/lib/jcommon-1.0.16.j
+ ar /home/acqexp/GECO/LIB/apache-log4j-1.2.16/log4j-1.2.16.jar ./
+Created-By: 1.6.0_24 (Sun Microsystems Inc.)
+Main-Class: run.Run
+

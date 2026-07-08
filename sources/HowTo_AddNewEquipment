@@ -1,0 +1,7 @@
+Pour ajouter un nouveau type d'équipement :
+
+1) L'ajouter à l'énumération EquipementType
+2) Ajouter un cas dans le switch de la méthode createPanel de Factory
+3) Créer une méthode qui renvoie un JDialog pour configurer cet équipement
+4) Ajouter un cas dans le switch du constructeur de Grid
+5) Faire les modifications nécessaires sur le ClientSOAP

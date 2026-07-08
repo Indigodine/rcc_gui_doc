@@ -1,0 +1,152 @@
+package gui.containers;
+
+import java.io.File;
+
+import java.awt.Dimension;
+import java.awt.Toolkit;
+
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+
+import core.Common;
+import core.reseau.ClientSOAP;
+import core.reseau.StateExpSOAP;
+import gui.Factory;
+import gui.components.Displayable;
+import gui.components.EquipementUI;
+
+import org.apache.log4j.*;
+
+/**
+ * Fenêtre de l'application
+ * @author malassigne
+ *
+ */
+public class Window extends JFrame {
+
+	private static final long serialVersionUID = 1L;
+	private ContentPanel content;
+
+	public Window() {
+
+	    Common.getLangue();
+
+		setTitle(Common.getString("IHM_Run_Control"));
+
+		Factory.window = this;
+
+		SplashScreen splashScreen = new SplashScreen();
+
+		JDialog dialog = new JDialog(this, Common.getString("Chargement"));
+
+		dialog.add(splashScreen);
+		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+		int posX = ((int)d.getWidth() - 500)/2;
+		int posY = ((int)d.getHeight() - 300)/2;
+		dialog.setSize(500, 300);
+		dialog.setLocation(posX, posY);
+		dialog.setUndecorated(true);
+		dialog.setVisible(true);
+
+		Common.myClientSOAP = new ClientSOAP(this);
+
+		try {Common.myClientSOAP.monitoringOff();}
+		catch (com.sun.xml.internal.ws.client.ClientTransportException e) {
+			splashScreen.step(0, false);
+			splashScreen.error("(!) ERROR Connection to Run Control Core (!)");
+			try {java.lang.Thread.sleep(5000);} catch (InterruptedException ee) {ee.printStackTrace();}
+			System.exit(0);
+		}
+
+		try {
+			splashScreen.step(0, true);
+			if (Common.myClientSOAP.isExpExist()) splashScreen.step(1, true);
+			else if (Common.myClientSOAP.creerExperience(Common.getRCCName(), Common.getPath())) splashScreen.step(2, true);
+			splashScreen.step(3, true);
+		} catch (com.sun.xml.internal.ws.client.ClientTransportException e) {
+			splashScreen.step(0, false);
+			splashScreen.error("(!) ERROR Connection to Run Control Core (!)");
+			try {java.lang.Thread.sleep(5000);} catch (InterruptedException ee) {ee.printStackTrace();}
+			System.exit(0);
+		}
+
+		splashScreen.step(4, true);
+
+		content = new ContentPanel(this);
+
+		PropertyConfigurator.configure( System.getenv("RCC_GUI_PROPERTIES") );
+
+	    Common.myLogger = Logger.getLogger("rcc_gui");
+
+	    this.setContentPane(content);
+		setJMenuBar(content.createMenu());
+		content.getLeftPanel().getLogoPanel().setVisible(true);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setSize(1280, 960);
+		loadConfig();
+
+		dialog.dispose();
+		posX = ((int)d.getWidth() - 1280)/2;
+		posY = ((int)d.getHeight() - 960)/2;
+		setLocation(posX, posY);
+		setVisible(true);
+		run();
+	}
+
+	public ContentPanel getContentPanel() {
+		return content;
+	}
+
+	private int cpt = 0;
+
+	public void run() {
+		new Thread() {
+			public void run() {
+				while (true) {
+					for (Displayable d : Displayable.getDisps()) {
+						if (cpt%d.freq == 0) { // permet de gérer plusieurs fréquences de rafraîchissement avec la même boucle
+							if (d instanceof EquipementUI && Common.stopMonitor) {
+								EquipementUI eqt = (EquipementUI)d;
+								eqt.offline();
+							} else d.refresh();
+						}
+					}
+					cpt++;
+					if (cpt >= 20) cpt = 0;
+					try {sleep(100);} catch(InterruptedException e) {}
+				}
+			}
+		}.start();
+	}
+
+	/**
+	 * Charge les équipements de la configuration courante du serveur
+	 */
+	public void loadConfig() {
+
+		StateExpSOAP config = null;
+
+		try {config = Common.myClientSOAP.getState();}
+		catch (com.sun.xml.internal.ws.client.ClientTransportException e) {return;}
+
+		if (config == null) return;
+
+		content.loadEquipements( config.getListEqt() );
+		content.loadLinks( config.getListLink() );
+
+		String file;
+
+		try {file = Common.myClientSOAP.getExperimentCfgFile();}
+		catch (com.sun.xml.internal.ws.client.ClientTransportException e) {return;}
+
+		if (file.equals("")) return;
+
+		int index = file.lastIndexOf(".xml");
+
+		if (index != -1) file = file.substring(0, index);
+
+		file = file + ".layout";
+
+		content.getGrid().loadLayout( new File( file ) );
+	}
+}
